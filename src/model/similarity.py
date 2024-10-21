@@ -22,20 +22,20 @@ class Similarity_Score:
 
         if len(already_read) == 0:
             print("Top rated books for you to get started:")
-            recommendations = self.user_feat_df.sort_values(
-                "book_rating_weighted", ascending=False
-            )[
-                [
-                    "isbn",
-                    "book_title",
-                    "book_author",
-                    "book_rating_mean",
-                    "book_rating_count",
-                    "book_rating_weighted",
+            recommendations = (
+                self.user_feat_df.sort_values("book_rating_weighted", ascending=False)[
+                    [
+                        "isbn",
+                        "book_title",
+                        "book_author",
+                        "book_rating_mean",
+                        "book_rating_count",
+                        "book_rating_weighted",
+                    ]
                 ]
-            ].drop_duplicates()[
-                : self.top_n + 1
-            ]
+                .drop_duplicates()
+                .reset_index()[: self.top_n + 1]
+            )
 
         else:
             sim_df_tmp = self.similarity_score[
@@ -61,6 +61,7 @@ class Similarity_Score:
                 .merge(sim_df_tmp, on="isbn", how="inner")
                 .sort_values("user_item_similarity", ascending=False)
                 .drop_duplicates()
+                .reset_index()
             )
             print("Top recommendations based on your reading history:")
 
