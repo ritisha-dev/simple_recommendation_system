@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import pickle
 
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
 from sklearn.metrics.pairwise import cosine_similarity
@@ -67,6 +68,9 @@ def user_item_similarity(df, user_rating_count_thr=7, book_rating_count_thr=10):
         index="isbn", columns="user_id", values="book_rating"
     ).fillna(0)
 
+    with open(f"{path}/features/index_data_meta.pkl", "wb") as f:
+        pickle.dump((pivot_df.index), f)
+
     sc = StandardScaler()
     filtered_mat = sc.fit_transform(pivot_df)
 
@@ -74,15 +78,4 @@ def user_item_similarity(df, user_rating_count_thr=7, book_rating_count_thr=10):
     sim_mat[np.arange(sim_mat.shape[0])[:, None] >= np.arange(sim_mat.shape[1])] = (
         np.nan
     )
-
-    item_sim_df = pd.DataFrame(sim_mat, columns=pivot_df.index).reset_index(drop=True)
-    item_sim_df["isbn_self"] = pivot_df.index
-
-    item_sim_df = pd.melt(
-        item_sim_df,
-        id_vars="isbn_self",
-        var_name="isbn",
-        value_name="user_item_similarity",
-    ).dropna()
-
-    return item_sim_df
+    np.save(f"{path}/features/sim_mat.npy", sim_mat)
