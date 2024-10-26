@@ -15,9 +15,7 @@ class Similarity_Score:
         with open(self.path + "/features/index_data_meta.pkl", "rb") as f:
             self.idx = pickle.load(f)
 
-    def predict(self, df):
-
-        recommendations_out = pd.DataFrame()
+    def predict(self, df=None, user_id=None):
 
         idx_list = list(self.idx)
         user, isbn, rank = [], [], []
@@ -27,20 +25,24 @@ class Similarity_Score:
             .reset_index(drop=True)
         )
 
-        unique_users = df[df["user_rating_count"] >= 7]["user_id"].unique()
+        unique_users = list(df["user_id"].unique()) if df is not None else [user_id]
+
         bookisbn_top = list(
-            df[["isbn", "user_rating_count"]]
-            .drop_duplicates()
-            .sort_values("user_rating_count", ascending=False)["isbn"]
-        )[: self.top_n]
+            self.ratings_df.groupby("isbn")
+            .agg(
+                book_rating_count=pd.NamedAgg(column="user_id", aggfunc="nunique"),
+            )
+            .reset_index()
+            .sort_values("book_rating_count", ascending=False)["isbn"][: self.top_n]
+        )
 
-        for u_id in iter(unique_users):
+        recommendations_out = pd.DataFrame()
 
-            user_id = u_id
+        for u_id in unique_users:
 
             already_read = [
                 i
-                for i in self.ratings_df[self.ratings_df["user_id"] == user_id][
+                for i in self.ratings_df[self.ratings_df["user_id"] == u_id][
                     "read"
                 ].values
                 if i in idx_list
@@ -74,19 +76,19 @@ class Similarity_Score:
             else:
                 bookisbn = bookisbn_top
 
-            user.extend([str(user_id)] * len(bookisbn))
+            user.extend([str(u_id)] * len(bookisbn))
             isbn.extend(bookisbn)
             rank.extend(list(range(1, len(bookisbn) + 1)))
 
         recommendations_out = pd.DataFrame(
             {
+                "rank": rank,
                 "user_id": user,
                 "isbn": isbn,
-                "rank": rank,
             }
         )
 
         recommendations_out = recommendations_out.merge(
-            self.books_df, on="isbn", how="left"
+            self.books_df[["isbn", "book_title"]], on="isbn", how="left"
         )
         return recommendations_out

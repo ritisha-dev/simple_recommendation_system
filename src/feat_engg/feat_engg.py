@@ -58,7 +58,7 @@ def rating_feat(df):
     return df
 
 
-def user_item_similarity(df, user_rating_count_thr=7, book_rating_count_thr=10):
+def user_item_similarity(df, path, user_rating_count_thr=7, book_rating_count_thr=10):
 
     filtered_df = df[
         (df["user_rating_count"] >= user_rating_count_thr)
