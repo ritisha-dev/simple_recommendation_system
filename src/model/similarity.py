@@ -27,7 +27,8 @@ class Similarity_Score:
             .reset_index(drop=True)
         )
 
-        unique_users = df[df["user_rating_count"] >= 7]["user_id"].unique()
+        unique_users = df["user_id"].unique()
+
         bookisbn_top = list(
             df[["isbn", "user_rating_count"]]
             .drop_duplicates()

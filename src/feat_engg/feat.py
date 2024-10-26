@@ -20,9 +20,9 @@ class Features:
         book_feat_df = book_feat(df)
         df = merge(df, user_feat_df, book_feat_df)
         df = rating_feat(df)
-        item_sim_df = user_item_similarity(df)
+        user_item_similarity(df, self.path)
 
-        return df, item_sim_df
+        return df
 
     def write(self, df, item_similarity_df):
 
@@ -30,14 +30,8 @@ class Features:
             os.makedirs(self.path + "/features")
 
         df.to_csv(self.path + "/features/feat_data.csv", index=False)
-        item_similarity_df.to_csv(
-            self.path + "/features/item_similarity.csv", index=False
-        )
         print(
             f"Features have been generated and saved to {self.path}/features/feat_data.csv"
-        )
-        print(
-            f"User-Item similarity scores have been generated and saved to {self.path}features/item_similarity.csv"
         )
 
     def main(self):
@@ -45,5 +39,5 @@ class Features:
             os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
         )
         df = self.load()
-        df, item_similarity_df = self.transform(df)
-        self.write(df, item_similarity_df)
+        df = self.transform(df)
+        self.write(df)
