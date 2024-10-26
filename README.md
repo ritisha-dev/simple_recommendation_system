@@ -4,7 +4,7 @@ The current project aims to build a simple book recommendation system using curr
 
 ##### Approach
 
-##### Data
+###### Data
 
 We have 3 distinct datasets provided:
     1. User: Consists of unique users information, 278k users
